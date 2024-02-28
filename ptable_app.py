@@ -54,7 +54,7 @@ def display_element_properties(element):
 
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-  col_index = element.loc['Group'].iloc[0] - 1
+  col_index = element['Group'] - 1
   col = columns.columns[col_index]
   with col:
     # Display button
