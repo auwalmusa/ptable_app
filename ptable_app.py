@@ -54,7 +54,10 @@ def display_element_properties(element):
 
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-    with columns.columns[element.loc['Group'].iloc[0] - 1]:  # Adjust column based on the element's group
+  col_index = element.loc['Group'].iloc[0] - 1
+  col = columns.columns[col_index]
+  with col:
+    # Display button
         # Assign a CSS class based on the element's category (or other property)
         category_class = element['Phase'].lower().replace(" ", "-")  # Example: Convert "Noble Gas" to "noble-gas"
         button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
