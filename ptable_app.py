@@ -6,6 +6,14 @@ st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
 
 # Load the dataset
 df = pd.read_csv('elements.csv')
+
+# Convert 'Group' to numeric and drop rows where 'Group' is missing or cannot be converted
+df['Group'] = pd.to_numeric(df['Group'], errors='coerce')
+df = df.dropna(subset=['Group'])
+# Ensure 'Group' is integer for safe indexing
+df['Group'] = df['Group'].astype(int)
+
+# Sort the dataframe by 'Atomic_Number'
 df_sorted = df.sort_values('Atomic_Number')
 
 # Display the title
@@ -45,19 +53,16 @@ columns = st.columns(18)
 
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-    # Safely get the Group value and ensure it's within the expected range
-    group = element.get('Group')
-    if group is None or not 1 <= group <= 18:
-        st.warning(f"Skipping element {element['Name']} due to invalid or missing 'Group' value.")
+    group = element['Group']  # Access 'Group' value directly
+    if not 1 <= group <= 18:
+        st.warning(f"Skipping element {element['Name']} due to invalid 'Group' value.")
         continue
 
     col_index = group - 1
-    if col_index >= len(columns):
-        st.error(f"Group index out of range for element {element['Name']}.")
-        continue
-
     col = columns[col_index]
     with col:
-        phase = element.get('Phase', 'unknown').lower().replace(" ", "-")
-        button_html = f"<button class='element-button {phase}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
+        # Access 'Phase' value directly and handle missing values
+        phase = element['Phase'] if pd.notnull(element['Phase']) else 'unknown'
+        phase_class = phase.lower().replace(" ", "-")
+        button_html = f"<button class='element-button {phase_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
         st.markdown(button_html, unsafe_allow_html=True)
