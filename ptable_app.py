@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
-from bokeh.palettes import Category20
+from bokeh.transform import factor_cmap
+from bokeh.palettes import Category20  # Using a categorical palette with 20 colors
 
 # Set page configuration
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
@@ -14,23 +15,25 @@ df = pd.read_csv('elements.csv')
 df['Group'] = pd.to_numeric(df['Group'], errors='coerce')
 df.dropna(subset=['Group'], inplace=True)
 df['Group'] = df['Group'].astype(int)
-df['Period'] = df['Period'].astype(int)  # Ensuring 'Period' is an integer for proper sorting
-df['Type'] = df['Type'].astype(str)      # Assuming 'Type' is a column in your CSV for element categories
-
-# Assign colors based on 'Type' column
-color_factors = df['Type'].unique().tolist()
-color_palette = Category20[len(color_factors)] if len(color_factors) <= 20 else Category20[20] + color_factors[20:]
-df['color'] = df['Type'].map({typ: color for typ, color in zip(color_factors, color_palette)})
+df['Period'] = df['Period'].astype(int)
+df['group_str'] = df['Group'].astype(str)
+df['period_str'] = df['Period'].astype(str)
 
 # Create a ColumnDataSource
 source = ColumnDataSource(df)
 
-# Bokeh figure with appropriate range for a traditional periodic table layout
-p = figure(title="Periodic Table", x_range=(-1, 18), y_range=(-1, 10),
+# Define color mapper using 'Group'
+group_palette = Category20[20]  # Use a color palette with 20 distinct colors
+df['color'] = df['Group'] % 20  # Map group number to color index
+df['color'] = df['color'].apply(lambda x: group_palette[x])  # Apply color mapping
+
+# Bokeh figure
+p = figure(title="Periodic Table", x_range=sorted(df['group_str'].unique(), key=int),
+           y_range=sorted(df['period_str'].unique(), key=int, reverse=True),
            tools="", toolbar_location=None, width=1200, height=600)
 
 # Add rectangles for each element
-p.rect("Group", "Period", width=0.95, height=0.95, source=source,
+p.rect("group_str", "period_str", width=0.95, height=0.95, source=source,
        fill_color='color', line_color='black')
 
 # Add hover tool
@@ -54,10 +57,6 @@ p.axis.visible = False
 p.grid.visible = False
 p.outline_line_color = None
 p.background_fill_color = '#f0f0f0'
-
-# Add text labels for symbols
-p.text(x='Group', y='Period', text='Symbol', source=source,
-       text_align='center', text_baseline='middle', text_font_size='10pt', text_color="black")
 
 # Display the title
 st.title('Interactive Periodic Table')
