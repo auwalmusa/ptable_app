@@ -9,27 +9,28 @@ from bokeh.palettes import Turbo256
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
 
 # Assuming 'elements.csv' is in the same directory as your Streamlit app
+# Load the dataset
 df = pd.read_csv('elements.csv')
 
 # Preprocess the data
 df['Group'] = pd.to_numeric(df['Group'], errors='coerce')
 df.dropna(subset=['Group'], inplace=True)
 df['Group'] = df['Group'].astype(int)
-df_sorted = df.sort_values('Atomic_Number')
-df_sorted['period_str'] = df_sorted['Period'].astype(str)
-df_sorted['group_str'] = df_sorted['Group'].astype(str)
+df['period_str'] = df['Period'].astype(str)
+df['group_str'] = df['Group'].astype(str)
+
+# Ensure the 'Group' column is suitable for color mapping
+max_groups = len(df['Group'].unique())
+colors = Turbo256[:max(max_groups, 256)]  # Ensure there are enough colors
 
 # Create a ColumnDataSource
-source = ColumnDataSource(df_sorted)
+source = ColumnDataSource(df)
 
-# Define color mapper - assuming 'Type' or similar column for color mapping
-# Adjust the 'field_name' to match your DataFrame's column name for element types/categories
-field_name = 'Type'  # Example column name for element types
-colors = Turbo256[:len(df_sorted[field_name].unique())]
-color_mapper = factor_cmap(field_name, palette=colors, factors=df_sorted[field_name].unique())
+# Define color mapper using 'Group'
+color_mapper = factor_cmap('group_str', palette=colors, factors=df['group_str'].unique())
 
 # Bokeh figure
-p = figure(title="Periodic Table", x_range=df_sorted['group_str'].unique(), y_range=list(reversed(df_sorted['period_str'].unique())),
+p = figure(title="Periodic Table", x_range=df['group_str'].unique(), y_range=list(reversed(df['period_str'].unique())),
            tools="", toolbar_location=None, tooltips="@Name: @Symbol")
 
 # Add rectangles for each element
@@ -54,12 +55,12 @@ st.title('Interactive Periodic Table')
 # Bokeh chart in Streamlit
 st.bokeh_chart(p, use_container_width=True)
 
-# Sidebar with element details (optional, based on interaction)
+# Sidebar for element details (Optional)
 st.sidebar.header("Element Details")
 selected_symbol = st.sidebar.text_input("Enter an element symbol to see details:", "")
 
 if selected_symbol:
-    element = df_sorted[df_sorted['Symbol'].str.upper() == selected_symbol.upper()].iloc[0]
+    element = df[df['Symbol'].str.upper() == selected_symbol.upper()].iloc[0]
     if element.empty:
         st.sidebar.write("No details available. Please enter a valid symbol.")
     else:
