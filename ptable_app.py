@@ -1,8 +1,15 @@
 import streamlit as st
 import pandas as pd
-
+# Set page title and icon
+st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
 # Load the dataset
 df = pd.read_csv('elements.csv')
+
+# Handle missing values or data inconsistencies
+# Specifically, elements with missing 'Group' values are skipped
+df = df.dropna(subset=['Group'])
+df['Group'] = df['Group'].astype(int)  # Ensure 'Group' is an integer for indexing
+
 df_sorted = df.sort_values('Atomic_Number')
 
 # Display the title
