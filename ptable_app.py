@@ -70,20 +70,29 @@ st.bokeh_chart(p, use_container_width=True)
 st.sidebar.header("Element Details")
 selected_symbol = st.sidebar.text_input("Enter an element symbol to see details:", "")
 
+def safe_column_access(column_name):
+    """Return the column data if it exists, or a placeholder if not."""
+    if column_name in df.columns:
+        return df[column_name]
+    else:
+        st.sidebar.write(f"The column '{column_name}' does not exist in the dataset.")
+        return "Data not available"
+
 if selected_symbol:
-    element = df[df['Symbol'].str.upper() == selected_symbol.upper()].iloc[0] if not df[df['Symbol'].str.upper() == selected_symbol.upper()].empty else None
-    if element is None:
+    element_data = df[df['Symbol'].str.upper() == selected_symbol.upper()].iloc[0] if not df[df['Symbol'].str.upper() == selected_symbol.upper()].empty else None
+    if element_data is None:
         st.sidebar.write("No details available. Please enter a valid symbol.")
     else:
-        st.sidebar.write(f"**Name:** {element['Name']}")
-        st.sidebar.write(f"**Symbol:** {element['Symbol']}")
-        st.sidebar.write(f"**Atomic Number:** {element['Atomic_Number']}")
-        st.sidebar.write(f"**Atomic Weight:** {element['Atomic_Weight']}")
-        st.sidebar.write(f"**Density:** {element['Density']} g/cm³")
-        st.sidebar.write(f"**Electron Configuration:** {element['Electron_Configuration']}")
-        st.sidebar.write(f"**Valence:** {element['Valence']}")
-        st.sidebar.write(f"**Electronegativity:** {element['Electronegativity']}")
-        st.sidebar.write(f"**Electron Affinity:** {element['Electron_Affinity']} kJ/mol")
+        # Use the safe_column_access function to retrieve data
+        st.sidebar.write(f"**Name:** {safe_column_access('Name')}")
+        st.sidebar.write(f"**Symbol:** {safe_column_access('Symbol')}")
+        st.sidebar.write(f"**Atomic Number:** {safe_column_access('Atomic_Number')}")
+        st.sidebar.write(f"**Atomic Weight:** {safe_column_access('Atomic_Weight')}")
+        st.sidebar.write(f"**Density:** {safe_column_access('Density')}") g/cm³")
+        st.sidebar.write(f"**Electron Configuration:** {safe_column_access('Electron_Configuration')}")
+        st.sidebar.write(f"**Valence:** {safe_column_access('Valence')}")
+        st.sidebar.write(f"**Electronegativity:** {safe_column_access('Electronegativity')}")
+        st.sidebar.write(f"**Electron Affinity:** {safe_column_access('Electron_Affinity')}") kJ/mol")
 
 # Instructions for user
 st.write("Hover over an element to see its details.")
