@@ -45,14 +45,17 @@ columns = st.columns(18)
 
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-    col_index = element['Group'] - 1
-    if col_index >= 0 and col_index < len(columns):
-        col = columns[col_index]
-        with col:
-            # Ensure 'Phase' is a string; otherwise, use a default value like 'unknown'
-            phase = element['Phase'] if pd.notna(element['Phase']) else 'unknown'
-            category_class = phase.lower().replace(" ", "-")  # Convert "Noble Gas" to "noble-gas"
-            button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
-            st.markdown(button_html, unsafe_allow_html=True)
-    else:
-        st.error(f"Element {element['Name']} has an invalid group index: {element['Group']}")
+    # Ensure Group value is within the expected range (1-18)
+    group = element['Group']
+    if pd.isnull(group) or group < 1 or group > 18:
+        st.error(f"Element {element['Name']} has an invalid group: {group}")
+        continue  # Skip this iteration
+
+    col_index = group - 1
+    col = columns[col_index]
+    with col:
+        # Ensure 'Phase' is a string; otherwise, use a default value like 'unknown'
+        phase = element['Phase'] if pd.notna(element['Phase']) else 'unknown'
+        category_class = phase.lower().replace(" ", "-")  # Convert "Noble Gas" to "noble-gas"
+        button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
+        st.markdown(button_html, unsafe_allow_html=True)
