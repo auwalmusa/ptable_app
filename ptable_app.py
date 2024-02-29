@@ -4,7 +4,8 @@ import pandas as pd
 # Load the dataset
 df = pd.read_csv('elements.csv')
 df_sorted = df.sort_values('Atomic_Number')
-# Display the periodic table (interactive version)
+
+# Display the title
 st.title('Interactive Periodic Table')
 
 # Custom CSS to inject for styling the buttons and sidebar
@@ -36,19 +37,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Sort elements by their atomic number for a logical display
-df_sorted = df.sort_values('Atomic_Number')
-
 # Create a dynamic layout based on the number of elements
-# Create columns
 columns = st.columns(18)
-num_columns = len(columns.columns)
-print(f"Number of columns: {num_columns}")
 
-# Display elements
+# Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-
-  # Code to print index, try/except, display button
+    col_index = element['Group'] - 1
+    if col_index < len(columns):
+        col = columns[col_index]
+        with col:
+            # Assign a CSS class based on the element's category (or other property)
+            category_class = element['Phase'].lower().replace(" ", "-")  # Example: Convert "Noble Gas" to "noble-gas"
+            button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
+            st.markdown(button_html, unsafe_allow_html=True)
 
 # Helper function to display element properties
 def display_element_properties(element):
@@ -58,14 +59,3 @@ def display_element_properties(element):
                   'ElectronAffinity', 'Block', 'Group', 'Period', 'Electron_Configuration']
     for prop in properties:
         st.sidebar.write(f"**{prop.replace('_', ' ')}:** {element[prop]}")
-
-# Display elements in a grid-like layout
-for index, element in df_sorted.iterrows():
-  col_index = element['Group'] - 1
-  col = columns.columns[col_index]
-  with col:
-    # Display button
-        # Assign a CSS class based on the element's category (or other property)
-        category_class = element['Phase'].lower().replace(" ", "-")  # Example: Convert "Noble Gas" to "noble-gas"
-        button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
-        st.markdown(button_html, unsafe_allow_html=True)
