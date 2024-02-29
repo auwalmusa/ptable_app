@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, HoverTool
-from bokeh.palettes import Category20
+from bokeh.models import ColumnDataSource, HoverTool, Text
 
 # Set page configuration
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
@@ -27,12 +26,15 @@ df['color'] = df['Block'].apply(map_color)
 source = ColumnDataSource(df)
 
 # Bokeh figure with corrected orientation and axis ranges
-p = figure(title="Periodic Table", x_range=(0, 19), y_range=(0, 8),
+p = figure(title="Periodic Table", x_range=(0, 19), y_range=(9, 0),  # Adjusted y_range for correct orientation
            tools="", toolbar_location=None, plot_width=1200, plot_height=600)
 
 # Add rectangles for each element, using 'Group' for the x-coordinate and 'Period' for the y-coordinate
 p.rect("Group", "Period", width=0.95, height=0.95, source=source,
        fill_color='color', line_color='black')
+
+# Add text glyphs for element symbols
+p.add_glyph(source, Text(x="Group", y="Period", text="Symbol", text_align="center", text_baseline="middle"))
 
 # Add hover tool
 hover = HoverTool()
