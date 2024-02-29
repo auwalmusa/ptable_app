@@ -3,6 +3,65 @@ import pandas as pd
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.palettes import Category20
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.resources import CDN
+from bokeh.embed import file_html
+
+# Apply the color mapping function to the 'Block' column in the dataframe
+df['color'] = df['Block'].apply(map_color)
+
+# Create a ColumnDataSource from the dataframe
+source = ColumnDataSource(df)
+
+# Define the Bokeh figure with the correct orientation
+p = figure(title="Periodic Table", x_range=(0, 19), y_range=(0, 8),
+           tools="", toolbar_location=None, plot_width=1344, plot_height=497)
+
+# Add rectangles for each element with the specified colors and a black line border
+p.rect("Group", "Period", width=0.95, height=0.95, source=source,
+       fill_color='color', line_color='black')
+
+# Define the hover tool with the appropriate HTML for tooltips
+hover = HoverTool()
+hover.tooltips = """
+    <div>
+        <h3>@Name (@Symbol)</h3>
+        <div><strong>Atomic Number:</strong> @Atomic_Number</div>
+        <div><strong>Atomic Weight:</strong> @Atomic_Weight</div>
+        <div><strong>Density:</strong> @Density g/cm³</div>
+        <div><strong>Melting Point:</strong> @Melting_Point K</div>
+        <div><strong>Boiling Point:</strong> @Boiling_Point K</div>
+        <div><strong>Phase:</strong> @Phase</div>
+        <div><strong>Valence:</strong> @Valence</div>
+        <div><strong>Electronegativity:</strong> @Electronegativity</div>
+        <div><strong>Electron Affinity:</strong> @ElectronAffinity kJ/mol</div>
+        <div><strong>Group:</strong> @Group</div>
+        <div><strong>Period:</strong> @Period</div>
+    </div>
+"""
+p.add_tools(hover)
+
+# Customize the plot to show axes and grid
+p.axis.visible = True
+p.grid.visible = True
+p.axis.axis_label_standoff = 12
+p.xaxis.axis_label = "Group"
+p.yaxis.axis_label = "Period"
+p.xaxis.major_label_orientation = "horizontal"
+p.yaxis.major_label_orientation = "horizontal"
+p.background_fill_color = '#f0f0f0'
+
+# Generate the HTML components to embed the Bokeh figure
+html = file_html(p, CDN, "Periodic Table")
+
+# Save the HTML to a file to be shared with the user
+html_file_path = '/mnt/data/periodic_table.html'
+with open(html_file_path, 'w') as f:
+    f.write(html)
+
+# Return the path to the generated HTML file
+html_file_path
 
 # Set page configuration
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
