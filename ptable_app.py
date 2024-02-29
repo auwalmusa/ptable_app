@@ -8,7 +8,6 @@ from bokeh.palettes import Turbo256
 # Set page title and icon
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
 
-# Assuming 'elements.csv' is in the same directory as your Streamlit app
 # Load the dataset
 df = pd.read_csv('elements.csv')
 
@@ -55,17 +54,21 @@ st.title('Interactive Periodic Table')
 # Bokeh chart in Streamlit
 st.bokeh_chart(p, use_container_width=True)
 
-# Sidebar for element details (Optional)
+# Sidebar for element details
 st.sidebar.header("Element Details")
 selected_symbol = st.sidebar.text_input("Enter an element symbol to see details:", "")
 
 if selected_symbol:
-    element = df[df['Symbol'].str.upper() == selected_symbol.upper()].iloc[0]
-    if element.empty:
+    element = df[df['Symbol'].str.upper() == selected_symbol.upper()].iloc[0] if not df[df['Symbol'].str.upper() == selected_symbol.upper()].empty else None
+    if element is None:
         st.sidebar.write("No details available. Please enter a valid symbol.")
     else:
         st.sidebar.write(f"**Name:** {element['Name']}")
         st.sidebar.write(f"**Symbol:** {element['Symbol']}")
         st.sidebar.write(f"**Atomic Number:** {element['Atomic_Number']}")
         st.sidebar.write(f"**Atomic Weight:** {element['Atomic_Weight']}")
-        # Add more details as needed
+        st.sidebar.write(f"**Density:** {element['Density']} g/cm³")
+        st.sidebar.write(f"**Electron Configuration:** {element['Electron_Configuration']}")
+        st.sidebar.write(f"**Valence:** {element['Valence']}")
+        st.sidebar.write(f"**Electronegativity:** {element['Electronegativity']}")
+        st.sidebar.write(f"**Electron Affinity:** {element['ElectronAffinity']} kJ/mol")
