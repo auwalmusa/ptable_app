@@ -45,17 +45,19 @@ columns = st.columns(18)
 
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
-    # Ensure Group value is within the expected range (1-18)
-    group = element['Group']
-    if pd.isnull(group) or group < 1 or group > 18:
-        st.error(f"Element {element['Name']} has an invalid group: {group}")
-        continue  # Skip this iteration
+    # Safely get the Group value and ensure it's within the expected range
+    group = element.get('Group')
+    if group is None or not 1 <= group <= 18:
+        st.warning(f"Skipping element {element['Name']} due to invalid or missing 'Group' value.")
+        continue
 
     col_index = group - 1
+    if col_index >= len(columns):
+        st.error(f"Group index out of range for element {element['Name']}.")
+        continue
+
     col = columns[col_index]
     with col:
-        # Ensure 'Phase' is a string; otherwise, use a default value like 'unknown'
-        phase = element['Phase'] if pd.notna(element['Phase']) else 'unknown'
-        category_class = phase.lower().replace(" ", "-")  # Convert "Noble Gas" to "noble-gas"
-        button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
+        phase = element.get('Phase', 'unknown').lower().replace(" ", "-")
+        button_html = f"<button class='element-button {phase}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
         st.markdown(button_html, unsafe_allow_html=True)
