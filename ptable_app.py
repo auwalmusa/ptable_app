@@ -3,7 +3,7 @@ import pandas as pd
 
 # Load the dataset
 df = pd.read_csv('elements.csv')
-
+df_sorted = df.sort_values('Atomic_Number')
 # Display the periodic table (interactive version)
 st.title('Interactive Periodic Table')
 
@@ -40,8 +40,15 @@ st.markdown("""
 df_sorted = df.sort_values('Atomic_Number')
 
 # Create a dynamic layout based on the number of elements
-max_columns = 18  # Maximum number of groups in the periodic table
-columns = st.columns(max_columns)
+# Create columns
+columns = st.columns(18)
+num_columns = len(columns.columns)
+print(f"Number of columns: {num_columns}")
+
+# Display elements
+for index, element in df_sorted.iterrows():
+
+  # Code to print index, try/except, display button
 
 # Helper function to display element properties
 def display_element_properties(element):
