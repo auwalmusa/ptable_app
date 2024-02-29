@@ -3,7 +3,7 @@ import pandas as pd
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.transform import factor_cmap
-from bokeh.palettes import Viridis256
+from bokeh.palettes import Category20
 
 # Set page configuration
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
@@ -22,15 +22,16 @@ df['group_str'] = df['Group'].astype(str)
 source = ColumnDataSource(df)
 
 # Define color mapper using 'Group', ensure there are enough colors
-colors = Viridis256[:len(df['Group'].unique())]
+max_groups = 20  # Typically, there are 18 groups in the periodic table but we're using 20 for the color palette
+colors = Category20[max_groups]
 
 # Bokeh figure
-p = figure(title="Periodic Table", x_range=df['group_str'].unique(), y_range=list(reversed(df['period_str'].unique())),
-           tools="", toolbar_location=None)
+p = figure(title="Periodic Table", x_range=[str(x) for x in range(1, 19)], y_range=[str(y) for y in reversed(range(1, 8))],
+           tools="", toolbar_location=None, width=1200, height=450)
 
 # Add rectangles for each element
 p.rect("group_str", "period_str", width=0.95, height=0.95, source=source,
-       fill_color=factor_cmap('group_str', palette=colors, factors=df['group_str'].unique()), line_color=None)
+       fill_color=factor_cmap('group_str', palette=colors, factors=sorted(df['group_str'].unique())), line_color=None)
 
 # Add hover tool
 hover = HoverTool()
@@ -39,19 +40,19 @@ hover.tooltips = """
         <h3>@Name</h3>
         <div><strong>Symbol:</strong> @Symbol</div>
         <div><strong>Atomic Number:</strong> @Atomic_Number</div>
-        <div><strong>Atomic Weight:</strong> @Atomic_Weight g/mol</div>
-        <div><strong>Density:</strong> @Density g/cm³</div>
+        <div><strong>Atomic Weight:</strong> @Atomic_Weight</div>
+        <div><strong>Density:</strong> @Density</div>
         <div><strong>Electron Configuration:</strong> @Electron_Configuration</div>
         <div><strong>Valence:</strong> @Valence</div>
         <div><strong>Electronegativity:</strong> @Electronegativity</div>
-        <div><strong>Electron Affinity:</strong> @Electron_Affinity kJ/mol</div>
+        <div><strong>Electron Affinity:</strong> @Electron_Affinity</div>
     </div>
 """
 p.add_tools(hover)
 
 # Add element symbols as text labels
 p.text(x='group_str', y='period_str', text='Symbol', source=source,
-       text_align='center', text_baseline='middle', text_font_size='10pt')
+       text_align='center', text_baseline='middle', text_font_size='9pt', text_color="white")
 
 # Customizing plot aesthetics
 p.axis.visible = False
