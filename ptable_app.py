@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
-from bokeh.palettes import Category20c  # Using a categorical palette with 20 colors
+from bokeh.palettes import Category20
 
 # Set page configuration
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
@@ -21,17 +21,13 @@ df['period_str'] = df['Period'].astype(str)
 # Create a ColumnDataSource
 source = ColumnDataSource(df)
 
-# Assuming 'Category' is a column in your dataset that categorizes elements
-# If not, you would need to create such a categorization
-# For the sake of demonstration, I'll categorize elements by their group number
-df['Category'] = df['Group'] % len(Category20c)  # Simple categorization by group number
+# Define color mapper using 'Group'
+group_palette = Category20[20]  # Use a color palette with 20 distinct colors
+df['color'] = df['Group'] % 20  # Map group number to color index
+df['color'] = df['color'].apply(lambda x: group_palette[x])  # Apply color mapping
 
-# Define color mapper using 'Category'
-category_palette = Category20c[20]  # Use a color palette with 20 distinct colors
-df['color'] = df['Category'].apply(lambda x: category_palette[x])  # Apply color mapping
-
-# Bokeh figure
-p = figure(title="Periodic Table", x_range=(-1, 18), y_range=(-1, 10),
+# Bokeh figure with corrected y_range for the traditional layout
+p = figure(title="Periodic Table", x_range=(1, max(df['Group'])), y_range=(1, max(df['Period'])),
            tools="", toolbar_location=None, width=1200, height=600)
 
 # Add rectangles for each element
@@ -60,10 +56,6 @@ p.grid.visible = False
 p.outline_line_color = None
 p.background_fill_color = '#f0f0f0'
 
-# Add text labels for symbols
-p.text(x='Group', y='Period', text='Symbol', source=source,
-       text_align='center', text_baseline='middle', text_font_size='10pt', text_color="black")
-
 # Display the title
 st.title('Interactive Periodic Table')
 
@@ -78,6 +70,8 @@ if selected_symbol:
     element_df = df[df['Symbol'].str.upper() == selected_symbol.upper()]
     if not element_df.empty:
         element = element_df.iloc[0]
+        # Check for the existence of the 'Electron_Affinity' column
+        electron_affinity = element['Electron_Affinity'] if 'Electron_Affinity' in df.columns else "N/A"
         st.sidebar.write(f"**Name:** {element['Name']}")
         st.sidebar.write(f"**Symbol:** {element['Symbol']}")
         st.sidebar.write(f"**Atomic Number:** {element['Atomic_Number']}")
