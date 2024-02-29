@@ -1,15 +1,11 @@
 import streamlit as st
 import pandas as pd
+
 # Set page title and icon
 st.set_page_config(page_title="Interactive Periodic Table", page_icon="🔬")
+
 # Load the dataset
 df = pd.read_csv('elements.csv')
-
-# Handle missing values or data inconsistencies
-# Specifically, elements with missing 'Group' values are skipped
-df = df.dropna(subset=['Group'])
-df['Group'] = df['Group'].astype(int)  # Ensure 'Group' is an integer for indexing
-
 df_sorted = df.sort_values('Atomic_Number')
 
 # Display the title
@@ -50,10 +46,13 @@ columns = st.columns(18)
 # Display elements in a grid-like layout
 for index, element in df_sorted.iterrows():
     col_index = element['Group'] - 1
-    if col_index < len(columns):
+    if col_index >= 0 and col_index < len(columns):
         col = columns[col_index]
         with col:
-            # Assign a CSS class based on the element's category (or other property)
-            category_class = element['Phase'].lower().replace(" ", "-")  # Example: Convert "Noble Gas" to "noble-gas"
+            # Ensure 'Phase' is a string; otherwise, use a default value like 'unknown'
+            phase = element['Phase'] if pd.notna(element['Phase']) else 'unknown'
+            category_class = phase.lower().replace(" ", "-")  # Convert "Noble Gas" to "noble-gas"
             button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
             st.markdown(button_html, unsafe_allow_html=True)
+    else:
+        st.error(f"Element {element['Name']} has an invalid group index: {element['Group']}")
