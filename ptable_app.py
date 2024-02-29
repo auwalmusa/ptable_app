@@ -50,12 +50,3 @@ for index, element in df_sorted.iterrows():
             category_class = element['Phase'].lower().replace(" ", "-")  # Example: Convert "Noble Gas" to "noble-gas"
             button_html = f"<button class='element-button {category_class}' onclick='alert(\"{element['Name']}\")'>{element['Symbol']}</button>"
             st.markdown(button_html, unsafe_allow_html=True)
-
-# Helper function to display element properties
-def display_element_properties(element):
-    st.sidebar.header(f"{element['Name']} ({element['Symbol']})")
-    properties = ['Atomic_Number', 'Atomic_Weight', 'Density', 'Melting_Point',
-                  'Boiling_Point', 'Phase', 'Valence', 'Electronegativity',
-                  'ElectronAffinity', 'Block', 'Group', 'Period', 'Electron_Configuration']
-    for prop in properties:
-        st.sidebar.write(f"**{prop.replace('_', ' ')}:** {element[prop]}")
